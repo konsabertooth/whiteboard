@@ -6,11 +6,14 @@ import {
   faDroplet, 
   faPencil, 
   faEraser,
+  faSlash, 
+  faSquare, 
+  faCircle
 } from '@fortawesome/free-solid-svg-icons';
 
 import Whiteboard from "./whiteboad";
 import { ChromePicker } from "react-color";
-import { useNavigate } from "react-router-dom";
+
 
 const Board = ({uuid,socket,user,setUser,users}) => {
 
@@ -93,6 +96,22 @@ const Board = ({uuid,socket,user,setUser,users}) => {
              data-toggle="tooltip" data-placement="bottom right" title="Select Eraser">
               <FontAwesomeIcon icon={faEraser} size="xl" style={{color: "#000000",}} /></button>
           </div>
+          <div className="col-auto">
+            <button className="btn btn-outline-dark custom-button" onClick={(e)=>setTool("line")}
+            data-toggle="tooltip" data-placement="bottom right" title="Draw a line">
+              <FontAwesomeIcon icon={faSlash} rotation={90} size="xl" style={{color: "#000000",}} /></button>
+          </div>
+          <div className="col-auto">
+            <button className="btn btn-outline-dark custom-button" onClick={(e)=>setTool("rectangle")}
+             data-toggle="tooltip" data-placement="bottom right" title="Draw a rectangle">
+              <FontAwesomeIcon icon={faSquare} size="xl" style={{color: "#000000",}} /></button>
+          </div>
+          <div className="col-auto">
+            <button className="btn btn-outline-dark custom-button" onClick={(e)=>setTool("circle")}
+            data-toggle="tooltip" data-placement="bottom right" title="Draw a circle">
+              <FontAwesomeIcon icon={faCircle} size="xl" style={{color: "#000000",}} /></button>
+          </div>
+
           <div className="col-auto">
             <button className="btn btn-outline-dark custom-button1" onClick={handleToggleColorPicker}  data-toggle="tooltip" data-placement="bottom right" title="Select a color">
               <FontAwesomeIcon icon={faDroplet} size="xl" style={{color:`rgba(${r},${g},${b},${a})`}} /></button>

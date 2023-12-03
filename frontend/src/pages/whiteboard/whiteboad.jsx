@@ -98,6 +98,15 @@ const Whiteboard = ({canvasRef, ctxRef,elements,setElements, tool, color,thickne
                 roughcanvas.linearPath(element.path, {
                     stroke: "blue", strokeWidth:  element.thickness, roughness: 0});
                 ctxRef.current.globalCompositeOperation = "source-over";
+            }else if(element.type === "line"){
+                roughcanvas.draw( roughgenerator.line(element.offsetX, element.offsetY, element.width, element.height,{
+                    stroke:element.stroke,strokeWidth: element.thickness, roughness:0}) );
+            }else if(element.type === "rectangle"){
+                roughcanvas.draw( roughgenerator.rectangle(element.offsetX, element.offsetY, element.width, element.height,{
+                    stroke:element.stroke,strokeWidth: element.thickness, roughness:0}));
+            }else if(element.type === "circle"){
+                roughcanvas.draw( roughgenerator.circle(element.offsetX, element.offsetY,element.radius,{
+                    stroke:element.stroke,strokeWidth: element.thickness, roughness:0}));
             }
         });
 
@@ -114,6 +123,7 @@ const Whiteboard = ({canvasRef, ctxRef,elements,setElements, tool, color,thickne
     // #region  handle mouse
     const handlemousedown =useCallback( (e)=>{
         const {offsetX,offsetY} = e.nativeEvent;
+        console.log(tool);
 
         if (tool === "pencil" ) {
             setElements((prevElements) => [...prevElements, {
@@ -149,6 +159,65 @@ const Whiteboard = ({canvasRef, ctxRef,elements,setElements, tool, color,thickne
                 thickness: thicknessvalue,
                 stroke: hexcolor,
             });
+        }else if (tool === "line") {
+            setElements((prevElements) => [...prevElements,{
+                type:"line",
+                offsetX,
+                offsetY,
+                width:offsetX,
+                height:offsetY,
+                thickness:thicknessvalue,
+                stroke:hexcolor
+            }]);
+
+            emitDrawUpdate({
+                type: tool,
+                offsetX,
+                offsetY,
+                width: offsetX,
+                height: offsetY,
+                thickness: thicknessvalue,
+                stroke: hexcolor,
+            });
+
+        }else if (tool === "rectangle") {
+            setElements((prevElements) => [...prevElements,{
+                type:"rectangle",
+                offsetX,
+                offsetY,
+                width:0,
+                height:0,
+                thickness:thicknessvalue,
+                stroke: hexcolor
+            }]);
+
+            emitDrawUpdate({
+                type: tool,
+                offsetX,
+                offsetY,
+                width: 0,
+                height: 0,
+                thickness: thicknessvalue,
+                stroke: hexcolor,
+            });
+        }else if (tool === "circle") {
+            setElements((prevElements) => [...prevElements,{
+                type:"circle",
+                offsetX,
+                offsetY, 
+                radius:0,
+                thickness:thicknessvalue,
+                stroke: hexcolor
+            }]);
+
+            emitDrawUpdate({
+                type: tool,
+                offsetX,
+                offsetY,
+                radius: 0,
+                thickness: thicknessvalue,
+                stroke: hexcolor,
+            });
         }
         setIsDrawing(true);
     }, [tool, thicknessvalue, hexcolor, setElements, elements, setIsDrawing]);
@@ -176,11 +245,73 @@ const Whiteboard = ({canvasRef, ctxRef,elements,setElements, tool, color,thickne
                     type: tool,
                     offsetX,
                     offsetY,
-                    path: newpath, // Include the updated path in the socket data
+                    path: newpath,
                     thickness: thicknessvalue,
                     stroke: hexcolor,
                   });
-                }
+                }else if (tool ==="line") {
+                setElements((prevElements) =>
+                    prevElements.map((ele,index) =>{
+                        if(index === elements.length - 1){
+                            return{
+                                ...ele,
+                                width:offsetX,
+                                height:offsetY,
+                            }
+                        }else{
+                            return ele;
+                        }
+                    })
+                )
+                }else if (tool ==="rectangle") {
+                    setElements((prevElements) =>
+                        prevElements.map((ele,index) =>{
+                            if(index === elements.length - 1){
+                                return{
+                                    ...ele,
+                                    width:offsetX-ele.offsetX,
+                                    height:offsetY - ele.offsetY,
+
+                                }
+                            }else{
+                                return ele;
+                            }
+
+                        })
+                    );
+                    emitDrawUpdate({
+                        type: tool,
+                        offsetX,
+                        offsetY,
+                        width: offsetX - elements[elements.length - 1].offsetX,
+                        height: offsetY - elements[elements.length - 1].offsetY,
+                        thickness: thicknessvalue,
+                        stroke: hexcolor,
+                        });
+                }else if (tool ==="circle") {
+                    setElements((prevElements) =>
+                        prevElements.map((ele,index) =>{
+                            if(index === elements.length - 1){
+                                return{
+                                    ...ele,
+                                    radius:offsetX - ele.offsetX,
+                                }
+                            }else{
+                                return ele;
+                            }
+
+                        })
+                    );
+                    emitDrawUpdate({
+                        type: tool,
+                        offsetX,
+                        offsetY,
+                        radius: offsetX - elements[elements.length - 1].offsetX,
+                        thickness: thicknessvalue,
+                        stroke: hexcolor,
+                        });
+
+                    }
             }
     }, [tool, elements, setElements]);
     
@@ -199,6 +330,7 @@ const Whiteboard = ({canvasRef, ctxRef,elements,setElements, tool, color,thickne
     
     return(
         <div 
+            
             onMouseDown={handlemousedown}
             onMouseMove={handlemousemove}
             onMouseUp={handlemouseup}>
