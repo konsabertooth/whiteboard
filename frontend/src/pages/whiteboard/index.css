@@ -1,0 +1,43 @@
+.gridbackground {
+    background-image: url("../../components/images/bg_grid.png"); 
+    background-repeat: repeat;
+    background-position: center;
+
+    opacity: 0.7;
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: black; 
+    height: 100%;
+  }
+
+.custom-button{
+    background-color: gray !important;
+    color: black;
+    opacity: 0.8;
+    border: 2.35px solid !important;
+    size: 14px !important;
+
+}
+.custom-button1{
+    background-color: gray !important;    
+    border: 2.35px solid !important;
+    size: 14px !important;
+}
+
+.color-picker-container{
+    position: fixed;
+    top :10%;
+    left: 60%;
+}
+
+.thicknessslider{
+    background-color: gray !important;
+    color: black;
+    opacity: 0.8;
+    border: 2.35px solid !important;
+    
+    height: 30px !important;
+    width: 200px!important;
+}
