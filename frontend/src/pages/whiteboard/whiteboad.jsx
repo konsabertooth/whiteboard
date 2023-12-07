@@ -33,6 +33,13 @@ const Whiteboard = ({canvasRef, ctxRef,elements,setElements, tool, color,thickne
 
         });
 
+        socket.on("whiteboardState", (whiteboardState) => {
+            console.log(whiteboardState['whiteboardState']);
+            console.log(elements);
+            setElements((prevElements) => prevElements.concat(whiteboardState['whiteboardState']));
+            console.log(elements)
+        })
+
         socket.on("drawUpdatesuccess", (drawData) => {
             
             console.log(drawData);
@@ -42,6 +49,7 @@ const Whiteboard = ({canvasRef, ctxRef,elements,setElements, tool, color,thickne
         return () => {
             socket.off ("userJoined");
             socket.off("drawUpdatesuccess");
+            socket.off("whiteboardState")
         };
 
     },[]);
