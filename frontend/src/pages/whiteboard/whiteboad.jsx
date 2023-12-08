@@ -3,7 +3,7 @@ import rough from "roughjs"
 
 const roughgenerator = rough.generator();
 
-const Whiteboard = ({canvasRef, ctxRef,elements,setElements, tool, color,thicknessvalue, socket,user})=> {
+const Whiteboard = ({canvasRef, ctxRef,elements,setElements, tool, color,thicknessvalue, socket,user, setUsers})=> {
 
     const [isDrawing, setIsDrawing] = useState(false);
     const [timeoutId, setTimeoutId] = useState(null);
@@ -47,10 +47,23 @@ const Whiteboard = ({canvasRef, ctxRef,elements,setElements, tool, color,thickne
             setElements((prevElements) => [...prevElements, drawData]);
         });
 
+        // On the client side
+        socket.on("stateUpdated", (data) => {
+            const { success, users, whiteboardState } = data;
+            if (success) {
+                // Handle the updated state, e.g., update UI or perform any necessary actions
+                console.log("State has been updated:", users, whiteboardState);
+                setUsers(users);
+            } else {
+                console.error("Failed to update state");
+            }
+        });
+
         return () => {
             socket.off ("userJoined");
             socket.off("drawUpdatesuccess");
-            socket.off("whiteboardState")
+            socket.off("whiteboardState");
+            socket.off("stateUpdated");
         };
 
     },[]);

@@ -7,7 +7,7 @@ import React, { useState,useEffect} from "react";
 
 //enstablishes a connection with the server
 // const server = "192.168.56.11:31978"
-const server = "localhost:5002"
+const server = "localhost:5000"
 
 const connectionOptions = {
   "force new connection": true,
@@ -58,7 +58,7 @@ const App= ()=> {
     <div >
       <Routes>
         
-        <Route path="/" element={<Board uuid={uuid} socket={socket} user={user} setUser={setUser} users={users}/>}/>
+        <Route path="/" element={<Board uuid={uuid} socket={socket} user={user} setUser={setUser} users={users} setUsers={setUsers}/>}/>
       </Routes>
     </div>
   )
