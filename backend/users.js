@@ -1,5 +1,8 @@
-const users =[];
-const whiteboardState = [];
+let users =[];
+let whiteboardState = [];
+let temporaryWhiteboardState = [];
+
+// dead code start
 const addUser = ( { roomId, userId}) => {
 
     const user ={roomId,userId};
@@ -21,13 +24,26 @@ const getUser = (id) => {
 const getallusers=(roomId) => {
     return users.filter(user => user.roomId === roomId);
 }
-
-const updateWhiteboardState = (drawData) => {
-    whiteboardState.push(drawData);
-}
+// dead code end
 
 const getWhiteboardState = () => {
     return whiteboardState;
+}
+
+const setWhiteboardState = (payload) => {
+    whiteboardState = payload;
+}
+
+const getTemporaryWhiteboardState = () => {
+    return temporaryWhiteboardState;
+}
+
+const setTemporaryWhiteboardState = (payload) => {
+    temporaryWhiteboardState = payload;
+}
+
+const updateTemporaryWhiteboardState = (drawData) => {
+    temporaryWhiteboardState.push(drawData);
 }
 
 module.exports = {
@@ -35,6 +51,9 @@ module.exports = {
     removeUser,
     getUser,
     getallusers,
-    updateWhiteboardState,
-    getWhiteboardState
+    getWhiteboardState,
+    setWhiteboardState,
+    getTemporaryWhiteboardState,
+    setTemporaryWhiteboardState,
+    updateTemporaryWhiteboardState,
 };
