@@ -6,11 +6,13 @@ import io from "socket.io-client";
 import React, { useState,useEffect} from "react";
 
 //enstablishes a connection with the server
-const server = "http://localhost:5000"
+// const server = "192.168.56.11:31978"
+const server = "localhost:5002"
+
 const connectionOptions = {
   "force new connection": true,
   reconnectionAttempts: "Infinity",
-  timeout: 10000,
+  timeout: 100000,
   transports: ["websocket"],
 }
 
@@ -56,7 +58,7 @@ const App= ()=> {
     <div >
       <Routes>
         
-        <Route path="/mywhiteboard" element={<Board uuid={uuid} socket={socket} user={user} setUser={setUser} users={users}/>}/>
+        <Route path="/" element={<Board uuid={uuid} socket={socket} user={user} setUser={setUser} users={users}/>}/>
       </Routes>
     </div>
   )

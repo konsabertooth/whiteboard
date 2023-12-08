@@ -3,7 +3,7 @@ const app = express();
 
 const server = require("http").createServer(app);
 const {Server} = require ("socket.io");
-const { addUser,removeUser,getallusers,clearUsers } = require("./users");
+const { addUser,removeUser,getallusers,clearUsers, updateWhiteboardState, getWhiteboardState } = require("./users");
 
 const io = new Server(server);
 const port = process.env.PORT||5000;
@@ -25,6 +25,9 @@ io.on("connection",(socket)=>{
 
         socket.broadcast.to(roomId).emit("allusers", users);
         socket.emit("userHasJoined", { success: true, users});
+        const whiteboardState = getWhiteboardState();
+        socket.emit("whiteboardState", { success: true, whiteboardState})
+
         
         console.log("User has joined "+ userIdglobal);
     });
@@ -36,7 +39,7 @@ io.on("connection",(socket)=>{
     });
 
    socket.on("drawUpdate", (drawData) => {
-    
+    updateWhiteboardState(drawData);
     socket.broadcast.to(roomIdglobal).emit("drawUpdatesuccess", drawData);
 });
 })

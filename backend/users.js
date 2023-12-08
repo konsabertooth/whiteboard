@@ -1,5 +1,5 @@
 const users =[];
-
+const whiteboardState = [];
 const addUser = ( { roomId, userId}) => {
 
     const user ={roomId,userId};
@@ -22,9 +22,19 @@ const getallusers=(roomId) => {
     return users.filter(user => user.roomId === roomId);
 }
 
+const updateWhiteboardState = (drawData) => {
+    whiteboardState.push(drawData);
+}
+
+const getWhiteboardState = () => {
+    return whiteboardState;
+}
+
 module.exports = {
     addUser,
     removeUser,
     getUser,
     getallusers,
+    updateWhiteboardState,
+    getWhiteboardState
 };
