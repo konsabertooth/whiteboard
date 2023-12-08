@@ -15,7 +15,7 @@ import Whiteboard from "./whiteboad";
 import { ChromePicker } from "react-color";
 
 
-const Board = ({uuid,socket,user,setUser,users}) => {
+const Board = ({uuid,socket,user,setUser,users, setUsers}) => {
 
   // #region initiliase several constants for saving and passing data through the app
   const canvasRef = useRef(null);
@@ -134,7 +134,7 @@ const Board = ({uuid,socket,user,setUser,users}) => {
       <div className=" h-100 w-100" >
         <Whiteboard canvasRef={canvasRef} ctxRef={ctxRef} elements={elements}
         setElements={setElements}  tool={tool} color={seletedcolor} thicknessvalue={thicknessvalue} socket={socket} 
-        user={user}
+        user={user} setUsers={setUsers}
         />
        
       </div>

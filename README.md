@@ -42,3 +42,8 @@ First, login to docker cli then do:
 9. go to http://localhost:5173/mywhiteboard
 
 
+### Env variables for backend
+PORT=
+INTERVAL=
+REDIS_SERVER_IP=
+REDIS_PORT=
