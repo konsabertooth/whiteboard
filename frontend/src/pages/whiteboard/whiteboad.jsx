@@ -53,6 +53,7 @@ const Whiteboard = ({canvasRef, ctxRef,elements,setElements, tool, color,thickne
                 // Handle the updated state, e.g., update UI or perform any necessary actions
                 console.log("State has been updated:", users, whiteboardState);
                 setUsers(users);
+                setElements((prevElements) => whiteboardState);
             } else {
                 console.error("Failed to update state");
             }
