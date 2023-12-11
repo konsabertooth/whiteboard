@@ -144,7 +144,7 @@ const updateStateInCache = async () => {
         console.log('Succesfully updated state in cache...');
 
         // Emit a message to all connected users
-        io.to(roomIdglobal).emit("stateUpdated", { success: true, users: latest_state_users, whiteboardState: latest_state_whiteboard });            
+        io.to("mywhiteboard").emit("stateUpdated", { success: true, users: latest_state_users, whiteboardState: latest_state_whiteboard });            
     } catch (err) {
         console.log(err);
     } finally {
