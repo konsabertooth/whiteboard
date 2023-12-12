@@ -1,4 +1,4 @@
-import { useEffect,useState ,useLayoutEffect, useCallback} from "react";
+import React, { useEffect,useState ,useLayoutEffect, useCallback} from "react";
 import rough from "roughjs"
 
 const roughgenerator = rough.generator();
@@ -6,6 +6,7 @@ const roughgenerator = rough.generator();
 const Whiteboard = ({canvasRef, ctxRef,elements,setElements, tool, color,thicknessvalue, socket,user, setUsers})=> {
 
     const [isDrawing, setIsDrawing] = useState(false);
+    const [timeoutId, setTimeoutId] = useState(null);
     
     // #region translating rgba to hex  for roughjs
     function rgbaToHex(rgba) {
@@ -139,7 +140,17 @@ const Whiteboard = ({canvasRef, ctxRef,elements,setElements, tool, color,thickne
     //#endregion
     
     const emitDrawUpdate = (drawData) => {
-        socket.emit("drawUpdate", drawData);
+        if (timeoutId) {
+            clearTimeout(timeoutId);
+        }
+
+        // Set a new timeout to emit the drawing data after a delay (e.g., 500 milliseconds)
+        const newTimeoutId = setTimeout(() => {
+            socket.emit("drawUpdate", drawData);
+        }, 50);
+
+        // Update the timeoutId state
+        setTimeoutId(newTimeoutId);    
     };
 
     // #region  handle mouse
@@ -156,15 +167,6 @@ const Whiteboard = ({canvasRef, ctxRef,elements,setElements, tool, color,thickne
                 thickness:thicknessvalue,
                 stroke:hexcolor}]);
 
-            emitDrawUpdate({
-                type: tool,
-                offsetX,
-                offsetY,
-                path: [[offsetX, offsetY]],
-                thickness: thicknessvalue,
-                stroke: hexcolor,
-            });
-
         }else if(tool === "eraser" ) {
             setElements((prevElements) => [...prevElements, {
                 type:"eraser",
@@ -172,15 +174,7 @@ const Whiteboard = ({canvasRef, ctxRef,elements,setElements, tool, color,thickne
                 offsetY,
                 thickness:thicknessvalue,
                 path:[[offsetX,offsetY]],}]);
-            
-            emitDrawUpdate({
-                type: tool,
-                offsetX,
-                offsetY,
-                path: [[offsetX, offsetY]],
-                thickness: thicknessvalue,
-                stroke: hexcolor,
-            });
+        
         }else if (tool === "line") {
             setElements((prevElements) => [...prevElements,{
                 type:"line",
@@ -191,16 +185,6 @@ const Whiteboard = ({canvasRef, ctxRef,elements,setElements, tool, color,thickne
                 thickness:thicknessvalue,
                 stroke:hexcolor
             }]);
-
-            emitDrawUpdate({
-                type: tool,
-                offsetX,
-                offsetY,
-                width: offsetX,
-                height: offsetY,
-                thickness: thicknessvalue,
-                stroke: hexcolor,
-            });
 
         }else if (tool === "rectangle") {
             setElements((prevElements) => [...prevElements,{
@@ -213,15 +197,6 @@ const Whiteboard = ({canvasRef, ctxRef,elements,setElements, tool, color,thickne
                 stroke: hexcolor
             }]);
 
-            emitDrawUpdate({
-                type: tool,
-                offsetX,
-                offsetY,
-                width: 0,
-                height: 0,
-                thickness: thicknessvalue,
-                stroke: hexcolor,
-            });
         }else if (tool === "circle") {
             setElements((prevElements) => [...prevElements,{
                 type:"circle",
@@ -231,135 +206,84 @@ const Whiteboard = ({canvasRef, ctxRef,elements,setElements, tool, color,thickne
                 thickness:thicknessvalue,
                 stroke: hexcolor
             }]);
-
-            emitDrawUpdate({
-                type: tool,
-                offsetX,
-                offsetY,
-                radius: 0,
-                thickness: thicknessvalue,
-                stroke: hexcolor,
-            });
         }
         setIsDrawing(true);
     }, [tool, thicknessvalue, hexcolor, setElements, elements, setIsDrawing]);
 
-    const handlemousemove = useCallback((e)=>{
-        const {offsetX,offsetY} = e.nativeEvent;
-        if (isDrawing) {
-            if (tool === "pencil" || tool==="eraser") {
-                const {path} = elements[elements.length - 1];
-                const newpath = [...path, [offsetX, offsetY]];
-                setElements((prevElements) =>
-                    prevElements.map((ele,index) =>{
-                        if(index === elements.length - 1){
-                            return{
-                                ...ele,
-                                path:newpath,
+    const handlemousemove = useCallback(
+        (e) => {
+            const { offsetX, offsetY } = e.nativeEvent;
+
+            if (isDrawing) {
+                setElements((prevElements) => {
+                    return prevElements.map((ele, index) => {
+                        if (index === prevElements.length - 1) {
+                            // Update the position based on the tool type
+                            if (tool === "pencil" || tool === "eraser") {
+                                const { path } = ele;
+                                const newPath = [...path, [offsetX, offsetY]];
+                                return {
+                                    ...ele,
+                                    path: newPath,
+                                };
+                            } else if (tool === "line") {
+                                return {
+                                    ...ele,
+                                    width: offsetX,
+                                    height: offsetY,
+                                };
+                            } else if (tool === "rectangle") {
+                                return {
+                                    ...ele,
+                                    width: offsetX - ele.offsetX,
+                                    height: offsetY - ele.offsetY,
+                                };
+                            } else if (tool === "circle") {
+                                return {
+                                    ...ele,
+                                    radius: offsetX - ele.offsetX,
+                                };
                             }
-                        }else{
+                        } else {
                             return ele;
                         }
-                    })
-                );
-
-                emitDrawUpdate({
-                    type: tool,
-                    offsetX,
-                    offsetY,
-                    path: newpath,
-                    thickness: thicknessvalue,
-                    stroke: hexcolor,
-                  });
-                }else if (tool ==="line") {
-                setElements((prevElements) =>
-                    prevElements.map((ele,index) =>{
-                        if(index === elements.length - 1){
-                            return{
-                                ...ele,
-                                width:offsetX,
-                                height:offsetY,
-                            }
-                        }else{
-                            return ele;
-                        }
-                    })
-                )
-                }else if (tool ==="rectangle") {
-                    setElements((prevElements) =>
-                        prevElements.map((ele,index) =>{
-                            if(index === elements.length - 1){
-                                return{
-                                    ...ele,
-                                    width:offsetX-ele.offsetX,
-                                    height:offsetY - ele.offsetY,
-
-                                }
-                            }else{
-                                return ele;
-                            }
-
-                        })
-                    );
-                    emitDrawUpdate({
-                        type: tool,
-                        offsetX,
-                        offsetY,
-                        width: offsetX - elements[elements.length - 1].offsetX,
-                        height: offsetY - elements[elements.length - 1].offsetY,
-                        thickness: thicknessvalue,
-                        stroke: hexcolor,
-                        });
-                }else if (tool ==="circle") {
-                    setElements((prevElements) =>
-                        prevElements.map((ele,index) =>{
-                            if(index === elements.length - 1){
-                                return{
-                                    ...ele,
-                                    radius:offsetX - ele.offsetX,
-                                }
-                            }else{
-                                return ele;
-                            }
-
-                        })
-                    );
-                    emitDrawUpdate({
-                        type: tool,
-                        offsetX,
-                        offsetY,
-                        radius: offsetX - elements[elements.length - 1].offsetX,
-                        thickness: thicknessvalue,
-                        stroke: hexcolor,
-                        });
-
-                    }
+                    });
+                });
             }
-    }, [tool, elements, setElements]);
-    
-    const handlemouseup = useCallback((e) => {
+        },
+        [isDrawing, tool, setElements]
+    );
+
+    const handlemouseup = useCallback(() => {
         setIsDrawing(false);
 
-        emitDrawUpdate({
-            type: tool,
-            elements,
-            thickness: thicknessvalue,
-            stroke: hexcolor,
-          });
+        setElements((prevElements) => {
+            const lastElement = prevElements[prevElements.length - 1];
 
-    }, [setIsDrawing]);
+            if (lastElement && lastElement.type === tool) {
+                emitDrawUpdate({
+                    type: tool,
+                    ...lastElement, // Include the properties of the last drawn element
+                    thickness: thicknessvalue,
+                    stroke: hexcolor,
+                });
+            }
+
+            return prevElements;
+        });
+
+        if (timeoutId) {
+            clearTimeout(timeoutId);
+        }
+    }, [setIsDrawing, setElements, tool, thicknessvalue, hexcolor, timeoutId, emitDrawUpdate]);
+
     // #endregion
-    
-    return(
-        <div 
-            
-            onMouseDown={handlemousedown}
-            onMouseMove={handlemousemove}
-            onMouseUp={handlemouseup}>
-            <canvas ref={canvasRef} 
-            className="h-100 w-100"></canvas>
+
+    return (
+        <div onMouseDown={handlemousedown} onMouseMove={handlemousemove} onMouseUp={handlemouseup}>
+            <canvas ref={canvasRef} className="h-100 w-100"></canvas>
         </div>
-    )
-}
+    );
+};
 
 export default Whiteboard;
