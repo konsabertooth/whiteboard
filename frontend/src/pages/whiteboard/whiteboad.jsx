@@ -6,6 +6,7 @@ const roughgenerator = rough.generator();
 const Whiteboard = ({canvasRef, ctxRef,elements,setElements, tool, color,thicknessvalue, socket,user})=> {
 
     const [isDrawing, setIsDrawing] = useState(false);
+    const [timeoutId, setTimeoutId] = useState(null);
     
     // #region translating rgba to hex  for roughjs
     function rgbaToHex(rgba) {
@@ -125,7 +126,17 @@ const Whiteboard = ({canvasRef, ctxRef,elements,setElements, tool, color,thickne
     //#endregion
     
     const emitDrawUpdate = (drawData) => {
-        socket.emit("drawUpdate", drawData);
+        if (timeoutId) {
+            clearTimeout(timeoutId);
+        }
+
+        // Set a new timeout to emit the drawing data after a delay (e.g., 500 milliseconds)
+        const newTimeoutId = setTimeout(() => {
+            socket.emit("drawUpdate", drawData);
+        }, 50);
+
+        // Update the timeoutId state
+        setTimeoutId(newTimeoutId);    
     };
 
     // #region  handle mouse
@@ -253,7 +264,7 @@ const Whiteboard = ({canvasRef, ctxRef,elements,setElements, tool, color,thickne
                     type: tool,
                     offsetX,
                     offsetY,
-                    path: newpath,
+                    path: [[offsetX, offsetY]],
                     thickness: thicknessvalue,
                     stroke: hexcolor,
                   });
@@ -326,14 +337,29 @@ const Whiteboard = ({canvasRef, ctxRef,elements,setElements, tool, color,thickne
     const handlemouseup = useCallback((e) => {
         setIsDrawing(false);
 
-        emitDrawUpdate({
-            type: tool,
-            elements,
-            thickness: thicknessvalue,
-            stroke: hexcolor,
-          });
+        setElements((prevElements) => {
+            const lastElement = prevElements[prevElements.length - 1];
+            if (lastElement && lastElement.type === tool) {
+                emitDrawUpdate({
+                    type: tool,
+                    ...lastElement, // Include the properties of the last drawn element
+                    thickness: thicknessvalue,
+                    stroke: hexcolor,
+                });
 
-    }, [setIsDrawing]);
+                emitDrawUpdate({
+                    type: tool,
+                    elements,
+                    thickness: thicknessvalue,
+                    stroke: hexcolor,
+                });
+            }
+            return prevElements;
+        });
+        if (timeoutId) {
+            clearTimeout(timeoutId);
+        }
+    }, [setIsDrawing, setElements, tool, thicknessvalue, hexcolor, timeoutId, emitDrawUpdate]);
     // #endregion
     
     return(
